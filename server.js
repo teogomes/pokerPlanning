@@ -1,13 +1,3 @@
-  // Chat support
-  socket.on("chat-message", ({ roomId, user, message }) => {
-    if (!roomId || !rooms[roomId] || !user || !message) return;
-    // Broadcast to all in the room
-    io.to(roomId).emit("chat-message", {
-      user,
-      message,
-      timestamp: Date.now(),
-    });
-  });
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
@@ -155,7 +145,16 @@ io.on("connection", (socket) => {
     updateRoomSeats(roomId);
   });
 
-  //
+  // Chat support
+  socket.on("chat-message", ({ roomId, user, message }) => {
+    if (!roomId || !rooms[roomId] || !user || !message) return;
+    // Broadcast to all in the room
+    io.to(roomId).emit("chat-message", {
+      user,
+      message,
+      timestamp: Date.now(),
+    });
+  });
 
   function updateRoomUsers(roomId) {
     const userList = Object.entries(rooms[roomId].users).map(([id, u]) => ({

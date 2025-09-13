@@ -89,7 +89,7 @@ const PlanningPokerApp: React.FC = () => {
   };
 
   // Get my display name from participants (currentUserId)
-  const myUser = participants.find((u) => u.id === currentUserId);
+  const myUser = participants.find((u) => u.id === getSocket()?.id);
 
   return (
     <Box
@@ -150,38 +150,42 @@ const PlanningPokerApp: React.FC = () => {
                     You: <span style={{ color: "#0ea5e9" }}>{myUser.name}</span>
                   </Typography>
                 )}
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  size="medium"
-                  sx={{ fontWeight: 700, borderRadius: 2, ml: 2 }}
-                  onClick={() => setDrawerOpen(true)}
-                >
-                  Participants
-                </Button>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    size="medium"
+                    sx={{ fontWeight: 700, borderRadius: 2, ml: 2 }}
+                    onClick={() => setDrawerOpen(true)}
+                  >
+                    Participants
+                  </Button>
+                  {joinedRoom && (
+                    <Button
+                      variant="contained"
+                      color="error"
+                      size="medium"
+                      sx={{ fontWeight: 700, borderRadius: 2, boxShadow: 2 }}
+                      onClick={() => {
+                        setJoinedRoom(null);
+                        setParticipants([]);
+                        setSeats(getInitialSeats());
+                        setCurrentUserId("");
+                      }}
+                    >
+                      Leave
+                    </Button>
+                  )}
+                </Box>
               </>
             )}
           </Box>
-          {joinedRoom && (
-            <Button
-              variant="contained"
-              color="error"
-              size="medium"
-              sx={{ fontWeight: 700, borderRadius: 2, boxShadow: 2 }}
-              onClick={() => {
-                setJoinedRoom(null);
-                setParticipants([]);
-                setSeats(getInitialSeats());
-                setCurrentUserId("");
-              }}
-            >
-              Leave
-            </Button>
-          )}
         </Container>
         {/* Participants Drawer */}
         <ParticipantsDrawer
           open={drawerOpen}
+          roomId={joinedRoom ?? ""}
+          currentUser={myUser ?? { id: "", name: "Guest" }}
           onClose={() => setDrawerOpen(false)}
           participants={participants}
         />
