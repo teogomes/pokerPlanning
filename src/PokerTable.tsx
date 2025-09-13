@@ -165,7 +165,6 @@ const PokerTable: React.FC<PokerTableProps> = ({
           {seats.map((seat, idx) => {
             const pos = seatPositions[idx];
             const isOccupied = !!seat.occupiedBy;
-            const occupant = participants.find((p) => p.id === seat.occupiedBy);
             return (
               <div
                 key={seat.id}

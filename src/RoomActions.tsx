@@ -20,14 +20,9 @@ interface User {
   name: string;
 }
 
-const RoomActions: React.FC<RoomProps> = ({
-  onJoin,
-  onCreate,
-  setUsersGlobal,
-}) => {
+const RoomActions: React.FC<RoomProps> = ({ onJoin, onCreate }) => {
   const [roomId, setRoomId] = useState("1");
   const [newRoomId, setNewRoomId] = useState("");
-  const [users, setUsers] = useState<User[]>([]);
 
   const [userName, setUserName] = useState(
     "teo" + Math.random().toString(36).slice(2, 5)
@@ -66,7 +61,7 @@ const RoomActions: React.FC<RoomProps> = ({
         name: userName.trim(),
         browserId: browserId.current,
       });
-      onJoin(roomId.trim(), users);
+      onJoin(roomId.trim(), []);
     }
   };
 
@@ -80,7 +75,7 @@ const RoomActions: React.FC<RoomProps> = ({
         name: userName.trim(),
         browserId: browserId.current,
       });
-      onCreate(newRoomId.trim(), users);
+      onCreate(newRoomId.trim(), []);
       setNewRoomId("");
     }
   };
@@ -285,33 +280,6 @@ const RoomActions: React.FC<RoomProps> = ({
                 Room: {currentRoom}
               </Typography>
 
-              <Divider sx={{ opacity: 0.5 }}>Users in this room</Divider>
-              <Stack spacing={0} sx={{ width: "100%" }}>
-                {users.length === 0 && (
-                  <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    align="center"
-                    sx={{ p: 1 }}
-                  >
-                    No users yet
-                  </Typography>
-                )}
-                {users.map((u) => (
-                  <Box
-                    key={u.id}
-                    sx={{ borderBottom: "1px solid #ede9fe", py: 1 }}
-                  >
-                    <Typography
-                      fontWeight={600}
-                      fontSize={18}
-                      color="text.primary"
-                    >
-                      {u.name}
-                    </Typography>
-                  </Box>
-                ))}
-              </Stack>
               <Divider sx={{ opacity: 0.5 }} />
               <Stack
                 direction="row"
