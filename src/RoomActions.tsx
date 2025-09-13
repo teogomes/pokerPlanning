@@ -21,12 +21,10 @@ interface User {
 }
 
 const RoomActions: React.FC<RoomProps> = ({ onJoin, onCreate }) => {
-  const [roomId, setRoomId] = useState("1");
+  const [roomId, setRoomId] = useState("");
   const [newRoomId, setNewRoomId] = useState("");
 
-  const [userName, setUserName] = useState(
-    "teo" + Math.random().toString(36).slice(2, 5)
-  );
+  const [userName, setUserName] = useState("");
   const [currentRoom, setCurrentRoom] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [tab, setTab] = useState(0); // 0 = Join, 1 = Create
