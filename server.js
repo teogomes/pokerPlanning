@@ -53,6 +53,7 @@ io.on("connection", (socket) => {
     currentRoom = roomId;
     rooms[roomId].users[userId] = { name, browserId };
     socket.join(roomId);
+    console.log(`[ROOM] User joined: name="${name}", roomId="${roomId}"`);
     updateRoomUsers(roomId);
     updateRoomSeats(roomId);
     // Also emit seats directly to the joining socket
