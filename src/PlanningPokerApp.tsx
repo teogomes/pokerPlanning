@@ -28,6 +28,7 @@ const PlanningPokerApp: React.FC = () => {
   const [votesRevealed, setVotesRevealed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const [adminId, setAdminId] = useState<string | null>(null);
   useEffect(() => {
     const socket = getSocket();
     socket.on("room-seats", (serverSeats: Seat[]) => {
@@ -37,8 +38,9 @@ const PlanningPokerApp: React.FC = () => {
       setVotes(serverVotes);
       setVotesRevealed(revealed);
     });
-    socket.on("room-users", (userList: User[]) => {
-      setParticipants(userList);
+    socket.on("room-users", ({ users, admin }) => {
+      setParticipants(users);
+      setAdminId(admin);
     });
     return () => {
       socket.off("room-seats");
@@ -91,6 +93,7 @@ const PlanningPokerApp: React.FC = () => {
   // Get my display name from participants (currentUserId)
   const myUser = participants.find((u) => u.id === getSocket()?.id);
 
+  const isAdmin = adminId === getSocket().id;
   return (
     <Box
       sx={{
@@ -208,6 +211,7 @@ const PlanningPokerApp: React.FC = () => {
               onVote={handleVote}
               onReset={handleReset}
               roomId={joinedRoom}
+              isAdmin={isAdmin}
             />
           )}
         </Stack>

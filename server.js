@@ -30,6 +30,7 @@ io.on("connection", (socket) => {
         seats: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
         votes: {},
         revealed: false,
+        admin: userId, // first user is admin
       };
     }
     // Prevent duplicate join from same browserId
@@ -161,7 +162,10 @@ io.on("connection", (socket) => {
       id,
       name: u.name,
     }));
-    io.to(roomId).emit("room-users", userList);
+    io.to(roomId).emit("room-users", {
+      users: userList,
+      admin: rooms[roomId].admin,
+    });
   }
 
   function updateRoomSeats(roomId) {

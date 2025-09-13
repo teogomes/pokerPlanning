@@ -16,6 +16,7 @@ interface PokerTableProps {
   roomId: string;
   onVote: (value: string | null) => void;
   onReset: () => void;
+  isAdmin: boolean;
 }
 
 const VOTE_OPTIONS = ["1", "2", "3", "5", "8", "13", "21", "?", "☕️"];
@@ -29,6 +30,7 @@ const PokerTable: React.FC<PokerTableProps> = ({
   votesRevealed,
   onVote,
   onReset,
+  isAdmin,
 }) => {
   const socketId = getSocket().id || "";
   // Find current user's seat
@@ -41,7 +43,6 @@ const PokerTable: React.FC<PokerTableProps> = ({
   const [localRevealed, setLocalRevealed] = useState(false);
   const countdownTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // ...existing code...
   const seatPositions = [
     { x: 0.5, y: 0.08 }, // top
     { x: 0.88, y: 0.25 }, // top-right
@@ -92,8 +93,14 @@ const PokerTable: React.FC<PokerTableProps> = ({
 
   // Button triggers server event
   const handleReveal = () => {
-    if (votesRevealed || votes.length === 0 || countdown !== null) return;
-    getSocket().emit("reveal-votes", { roomId: roomId });
+    if (
+      !isAdmin ||
+      votesRevealed ||
+      votes.filter((v) => v.value)?.length < 1 ||
+      countdown !== null
+    )
+      return;
+    getSocket().emit("reveal-votes", { roomId: roomId, userId: socketId });
   };
 
   // Flip cards back on reset
@@ -393,7 +400,7 @@ const PokerTable: React.FC<PokerTableProps> = ({
                   }
                 `}</style>
               </div>
-            ) : (
+            ) : isAdmin ? (
               <Button
                 variant="contained"
                 color="info"
@@ -408,6 +415,7 @@ const PokerTable: React.FC<PokerTableProps> = ({
                 }}
                 onClick={handleReveal}
                 disabled={
+                  !isAdmin ||
                   votesRevealed ||
                   votes.filter((v) => v.value)?.length < 1 ||
                   countdown !== null
@@ -415,11 +423,11 @@ const PokerTable: React.FC<PokerTableProps> = ({
               >
                 Reveal Cards
               </Button>
-            )}
+            ) : null}
           </div>
         </div>
         {/* Show Start New button only when cards are revealed and not revealing */}
-        {votesRevealed && countdown === null && !flipping && (
+        {votesRevealed && countdown === null && !flipping && isAdmin && (
           <div style={{ display: "flex", gap: 8, marginTop: 24 }}>
             <Button
               variant="contained"

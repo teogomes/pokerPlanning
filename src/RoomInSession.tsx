@@ -9,9 +9,9 @@ interface RoomInSessionProps {
   votes: { id: string; value: string | null }[];
   votesRevealed: boolean;
   onSeatSelect: (seatId: number) => void;
-  onVote: (value: string) => void;
-
+  onVote: (value: string | null) => void;
   onReset: () => void;
+  isAdmin: boolean;
 }
 
 const RoomInSession: React.FC<RoomInSessionProps> = ({
@@ -23,6 +23,7 @@ const RoomInSession: React.FC<RoomInSessionProps> = ({
   onSeatSelect,
   onVote,
   onReset,
+  isAdmin,
 }) => {
   return (
     <Stack spacing={2} alignItems="center">
@@ -35,6 +36,7 @@ const RoomInSession: React.FC<RoomInSessionProps> = ({
         votesRevealed={votesRevealed}
         onVote={onVote}
         onReset={onReset}
+        isAdmin={isAdmin}
       />
     </Stack>
   );
