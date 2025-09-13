@@ -9,6 +9,7 @@ export interface Seat {
 
 interface PokerTableProps {
   seats: Seat[];
+  currentUserId: string;
   onSeatSelect: (seatId: number) => void;
   participants?: { id: string; name: string }[];
   votes: { id: string; value: string | null }[];
@@ -23,6 +24,7 @@ const VOTE_OPTIONS = ["1", "2", "3", "5", "8", "13", "21", "?", "☕️"];
 
 const PokerTable: React.FC<PokerTableProps> = ({
   roomId,
+  currentUserId,
   seats,
   onSeatSelect,
   participants = [],
@@ -34,7 +36,8 @@ const PokerTable: React.FC<PokerTableProps> = ({
 }) => {
   const socketId = getSocket().id || "";
   // Find current user's seat
-  const mySeat = seats.find((s) => s.occupiedBy === socketId);
+  const mySeat = seats.find((s) => s.occupiedBy === currentUserId);
+  console.log("🚀 ~ PokerTable ~ seats:", mySeat);
   const myVote = votes.find((v) => v.id === socketId)?.value || null;
 
   // Countdown and animation state

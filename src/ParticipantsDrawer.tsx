@@ -71,12 +71,12 @@ const ParticipantsDrawer: React.FC<ParticipantsDrawerProps> = ({
       PaperProps={{
         sx: {
           width: 300,
+          maxWidth: "100vw",
           boxShadow: 4,
           borderLeft: "2px solid #e0e7ef",
           background: "#f8fafc",
         },
       }}
-      sx={{ display: { xs: "none", md: "block" } }}
     >
       <Card
         elevation={3}

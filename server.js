@@ -40,18 +40,16 @@ io.on("connection", (socket) => {
         seats: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
         votes: {},
         revealed: false,
-        admin: userId, // first user is admin
+        admin: browserId, // first user is admin
       };
     }
     // Prevent duplicate join from same browserId
-    if (
-      Object.values(rooms[roomId].users).some((u) => u.browserId === browserId)
-    ) {
+    if (Object.keys(rooms[roomId].users).includes(browserId)) {
       socket.emit("join-denied", "Already joined from another tab or device");
       return;
     }
     currentRoom = roomId;
-    rooms[roomId].users[userId] = { name, browserId };
+    rooms[roomId].users[browserId] = { name, browserId, socketId: socket.id };
     socket.join(roomId);
     console.log(`[ROOM] User joined: name="${name}", roomId="${roomId}"`);
     updateRoomUsers(roomId);
@@ -64,20 +62,18 @@ io.on("connection", (socket) => {
 
   socket.on("add-user", ({ roomId, name, browserId }) => {
     if (!roomId || !rooms[roomId]) return;
-    if (
-      Object.values(rooms[roomId].users).some((u) => u.browserId === browserId)
-    ) {
+    if (Object.keys(rooms[roomId].users).includes(browserId)) {
       return;
     }
-    rooms[roomId].users[socket.id] = { name, browserId };
+    rooms[roomId].users[browserId] = { name, browserId, socketId: socket.id };
     updateRoomUsers(roomId);
     updateRoomSeats(roomId);
     emitRoomVotes(roomId);
   });
 
-  socket.on("vote", ({ roomId, value }) => {
-    if (!roomId || !rooms[roomId]) return;
-    rooms[roomId].votes[socket.id] = value;
+  socket.on("vote", ({ roomId, value, userId }) => {
+    if (!roomId || !rooms[roomId] || !userId) return;
+    rooms[roomId].votes[userId] = value;
     emitRoomVotes(roomId);
   });
 
@@ -96,13 +92,15 @@ io.on("connection", (socket) => {
     emitRoomVotes(roomId);
   });
 
-  socket.on("leave-room", ({ roomId }) => {
-    if (roomId && rooms[roomId] && rooms[roomId].users[userId]) {
+  socket.on("leave-room", ({ roomId, userId: browserId }) => {
+    if (roomId && rooms[roomId] && rooms[roomId].users[browserId]) {
       // Remove user from seats
       rooms[roomId].seats = rooms[roomId].seats.map((seat) =>
-        seat.occupiedBy === userId ? { ...seat, occupiedBy: undefined } : seat
+        seat.occupiedBy === browserId
+          ? { ...seat, occupiedBy: undefined }
+          : seat
       );
-      delete rooms[roomId].users[userId];
+      delete rooms[roomId].users[browserId];
       socket.leave(roomId);
       cleanupRoom(roomId);
       updateRoomSeats(roomId);
@@ -110,46 +108,40 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    if (currentRoom && rooms[currentRoom] && rooms[currentRoom].users[userId]) {
-      // Remove user from seats
-      rooms[currentRoom].seats = rooms[currentRoom].seats.map((seat) =>
-        seat.occupiedBy === userId ? { ...seat, occupiedBy: undefined } : seat
+    // Remove user by socketId
+    if (currentRoom && rooms[currentRoom]) {
+      const browserId = Object.keys(rooms[currentRoom].users).find(
+        (bid) => rooms[currentRoom].users[bid].socketId === socket.id
       );
-      delete rooms[currentRoom].users[userId];
-      cleanupRoom(currentRoom);
-      updateRoomSeats(currentRoom);
+      if (browserId) {
+        rooms[currentRoom].seats = rooms[currentRoom].seats.map((seat) =>
+          seat.occupiedBy === browserId
+            ? { ...seat, occupiedBy: undefined }
+            : seat
+        );
+        delete rooms[currentRoom].users[browserId];
+        cleanupRoom(currentRoom);
+        updateRoomSeats(currentRoom);
+      }
     }
   });
 
   socket.on("select-seat", ({ roomId, seatId, userId: browserId }) => {
-    if (!roomId || !rooms[roomId]) return;
-    // Find the socket id for this browserId
-    const userSocketId = Object.entries(rooms[roomId].users).find(
-      ([, u]) => u.browserId === browserId
-    )?.[0];
-    if (!userSocketId) {
-      console.log(
-        `[SERVER] No userSocketId found for browserId=${browserId} in room ${roomId}`
-      );
-      return;
-    }
+    if (!roomId || !rooms[roomId] || !browserId) return;
     // Remove user from any previous seat
     rooms[roomId].seats = rooms[roomId].seats.map((seat) =>
-      seat.occupiedBy === userSocketId
-        ? { ...seat, occupiedBy: undefined }
-        : seat
+      seat.occupiedBy === browserId ? { ...seat, occupiedBy: undefined } : seat
     );
     // Assign seat if not already taken
     let seatAssigned = false;
     rooms[roomId].seats = rooms[roomId].seats.map((seat) => {
       if (seat.id === seatId && !seat.occupiedBy) {
         seatAssigned = true;
-        return { ...seat, occupiedBy: userSocketId };
+        return { ...seat, occupiedBy: browserId };
       }
       return seat;
     });
-    if (seatAssigned) {
-    } else {
+    if (!seatAssigned) {
       console.log(
         `[SERVER] Seat ${seatId} could not be assigned (already occupied)`
       );
@@ -169,10 +161,12 @@ io.on("connection", (socket) => {
   });
 
   function updateRoomUsers(roomId) {
-    const userList = Object.entries(rooms[roomId].users).map(([id, u]) => ({
-      id,
-      name: u.name,
-    }));
+    const userList = Object.entries(rooms[roomId].users).map(
+      ([browserId, u]) => ({
+        id: browserId,
+        name: u.name,
+      })
+    );
     io.to(roomId).emit("room-users", {
       users: userList,
       admin: rooms[roomId].admin,
@@ -187,11 +181,10 @@ io.on("connection", (socket) => {
   function emitRoomVotes(roomId) {
     if (!rooms[roomId]) return;
     const { votes, revealed, users } = rooms[roomId];
-
     // Only send votes as values if revealed, otherwise send null or '?' for each user
-    const voteState = Object.keys(users).map((id) => ({
-      id,
-      value: votes[id],
+    const voteState = Object.keys(users).map((browserId) => ({
+      id: browserId,
+      value: votes[browserId],
     }));
     io.to(roomId).emit("room-votes", { votes: voteState, revealed });
   }

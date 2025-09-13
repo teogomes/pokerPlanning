@@ -4,6 +4,7 @@ import PokerTable from "./PokerTable";
 
 interface RoomInSessionProps {
   roomId: string | null;
+  currentUserId: string;
   participants: { id: string; name: string }[];
   seats: { id: number; occupiedBy?: string }[];
   votes: { id: string; value: string | null }[];
@@ -16,6 +17,7 @@ interface RoomInSessionProps {
 
 const RoomInSession: React.FC<RoomInSessionProps> = ({
   roomId,
+  currentUserId,
   participants,
   seats,
   votes,
@@ -37,6 +39,7 @@ const RoomInSession: React.FC<RoomInSessionProps> = ({
         onVote={onVote}
         onReset={onReset}
         isAdmin={isAdmin}
+        currentUserId={currentUserId}
       />
     </Stack>
   );
