@@ -4,13 +4,14 @@ import express from "express";
 import cors from "cors";
 
 const app = express();
-app.use(cors());
+
+app.use(cors({ origin: "https://pokerplanning-5pb7.onrender.com" }));
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: "https://pokerplanning-5pb7.onrender.com",
     methods: ["GET", "POST"],
   },
 });
@@ -19,6 +20,7 @@ const io = new Server(server, {
 const rooms = {};
 
 io.on("connection", (socket) => {
+  console.log(`[SOCKET] User connected: ${socket.id}`);
   let currentRoom = null;
   const userId = socket.id;
 
