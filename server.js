@@ -5,13 +5,19 @@ import cors from "cors";
 
 const app = express();
 
-app.use(cors({ origin: "https://pokerplanning-5pb7.onrender.com" }));
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://pokerplanning-5pb7.onrender.com",
+  "https://poker-planning-di9x05ydq-teogomes-projects.vercel.app",
+];
+
+app.use(cors({ origin: allowedOrigins }));
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://pokerplanning-5pb7.onrender.com",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
   },
 });
