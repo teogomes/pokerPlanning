@@ -10,7 +10,7 @@ const allowedOrigins = [
   "https://pokerplanning-5pb7.onrender.com",
   "https://poker-planning-di9x05ydq-teogomes-projects.vercel.app",
   "https://poker-planning-git-master-teogomes-projects.vercel.app",
-  "https://poker-planning-indol.vercel.app/",
+  "https://poker-planning-indol.vercel.app",
 ];
 
 app.use(cors({ origin: allowedOrigins }));
