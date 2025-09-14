@@ -38,7 +38,7 @@ const PokerTable: React.FC<PokerTableProps> = ({
   // Find current user's seat
   const mySeat = seats.find((s) => s.occupiedBy === currentUserId);
   console.log("🚀 ~ PokerTable ~ seats:", mySeat);
-  const myVote = votes.find((v) => v.id === socketId)?.value || null;
+  const myVote = votes.find((v) => v.id === currentUserId)?.value || null;
 
   // Countdown and animation state
   const [countdown, setCountdown] = useState<number | null>(null);
